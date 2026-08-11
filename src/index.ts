@@ -1,9 +1,8 @@
 import { Hono } from 'hono'
-import { getSpotifyTrack } from './lib/spotify'
+import { getSpotifyTrack, getSpotifyToken } from './lib/spotify'
 import { getCorsHeaders, getNextDayOfWeek, validateDateFormat } from './utils'
 import db, { hot100 } from './lib/postgres'
 import { sql } from 'drizzle-orm'
-import { Track } from 'spotify-api.js'
 import { SpotifyTrack } from './lib/spotify.js'
 
 const yeast = require('yeast')
@@ -117,9 +116,11 @@ app.get('/top-tracks', async c => {
 
 	console.log(`[${nonce}] Queried db in ${queryTime}ms`)
 
+	const token = await getSpotifyToken()
 	const spotifyIds: (SpotifyTrack | null)[] = await Promise.all(
 		songs.map(song =>
-			getSpotifyTrack(
+      getSpotifyTrack(
+        token,
 				`${song.title} ${song.performer}`,
 				song.title,
 				song.performer

@@ -6,7 +6,7 @@ export type SpotifyTrack = {
 let cachedToken: string | null = null
 let tokenExpiry: number = 0
 
-async function getSpotifyToken(): Promise<string> {
+export async function getSpotifyToken(): Promise<string> {
   if (cachedToken && Date.now() < tokenExpiry) return cachedToken
 
 	const res = await fetch('https://accounts.spotify.com/api/token', {
@@ -29,7 +29,7 @@ async function getSpotifyToken(): Promise<string> {
   const data = await res.json()
 
   cachedToken = data.access_token
-  tokenExpiry = Date.now() + (data.expires_in - 300) * 1000
+  tokenExpiry = Date.now() + ((data.expires_in - 300) * 1000)
 
   console.log(`Aquired new token, Expires in ${data.expires_in} Expires at ${tokenExpiry} Current ${Date.now()}`)
 
@@ -37,12 +37,11 @@ async function getSpotifyToken(): Promise<string> {
 }
 
 export async function getSpotifyTrack(
+  token: string,
 	queryKey: string,
 	songName: string,
 	artistName: string
 ): Promise<SpotifyTrack | null> {
-	const token = await getSpotifyToken()
-
 	const query = encodeURIComponent(`${songName} ${artistName}`)
 	const res = await fetch(
 		`https://api.spotify.com/v1/search?q=${query}&type=track&limit=1&market=US&offset=0`,
